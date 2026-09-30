@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#07569d">
+  <meta name="description" content="A proposal for Autoware reference designs, reusable software stacks, and a catalog organized by independent attributes.">
+  <title>Autoware Reference Design · Proposal</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="styles.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#presentation">Skip to slides</a>
+  <header class="toolbar">
+    <a class="wordmark" href="#slide-1" aria-label="Autoware presentation, first slide">autoware<span>Reference design</span></a>
+    <div class="toolbar-actions">
+      <span class="draft-label">Proposal for discussion</span>
+      <button class="glass-button overview-button" id="overview-toggle" aria-expanded="false" aria-controls="slide-menu">Slides <span aria-hidden="true">▦</span></button>
+      <button class="glass-button present-button" id="fullscreen-toggle">Present <span aria-hidden="true">⛶</span></button>
+      <a class="download-button" id="download-pdf" href="https://github.com/xmfcx/autoware-reference-design-definition/raw/refs/heads/data/autoware-reference-design.pdf" download="autoware-reference-design.pdf"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m-4-4 4 4 4-4M5 16v5h14v-5"/></svg>Download PDF</a>
+    </div>
+  </header>
+
+  <nav class="slide-menu" id="slide-menu" aria-label="Choose a slide" hidden></nav>
+
+  <main id="presentation" tabindex="-1" aria-label="Autoware reference design presentation">
+    <div class="deck-shell">
+      <div class="deck" id="deck">
+        <section class="slide cover is-active" id="slide-1" data-title="The reference design" aria-labelledby="title-1">
+          <div class="slide-content">
+            <header class="slide-heading"><h1 id="title-1">Autoware reference design</h1><p>A complete system blueprint with reusable parts.</p></header>
+            <div class="system-map" role="img" aria-label="Vehicle platform configuration, target operating conditions, and use case and driving responsibilities form a Deployment Profile. The Deployment Profile and Reference Software Stack form an Autoware Reference Design.">
+              <svg class="map-connections" viewBox="0 0 1136 336" aria-hidden="true"><defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#d8f6ff"/></marker></defs><path d="M270 48 H336 Q356 48 356 68 V90 Q356 110 380 110 H424"/><path d="M270 150 H336 Q356 150 356 130 Q356 110 380 110 H424"/><path d="M270 252 H328 Q356 252 356 224 V130 Q356 110 380 110 H424"/><path d="M680 110 H732 Q752 110 752 130 V168 Q752 188 776 188 H816"/><path d="M680 274 H732 Q752 274 752 254 V208 Q752 188 776 188 H816"/></svg>
+              <div class="map-node map-input platform"><span class="node-emoji">🚗</span><span>Vehicle platform<br>configuration</span></div>
+              <div class="map-node map-input conditions"><span class="node-emoji">🌍</span><span>Target operating<br>conditions</span></div>
+              <div class="map-node map-input purpose"><span class="node-emoji">🎯</span><span>Use case and<br>driving responsibilities</span></div>
+              <div class="map-node map-profile"><span class="node-emoji">📋</span><strong>Deployment<br>Profile</strong></div>
+              <div class="map-node map-software"><span class="node-emoji">💻</span><strong>Reference<br>Software Stack</strong></div>
+              <div class="map-node map-design"><span class="node-emoji">📐</span><strong>Autoware<br>Reference Design</strong></div>
+            </div>
+            <div class="cover-equation"><span>Deployment Profile</span><b>+</b><span>Reference Software Stack</span><b>=</b><strong>Reference Design</strong></div>
+          </div>
+          <footer class="slide-footer"><span>Terminology proposal</span><span>September 2026</span><span>01 / 08</span></footer>
+        </section>
+
+        <section class="slide" id="slide-2" data-title="Deployment profile" aria-labelledby="title-2" hidden>
+          <div class="slide-content">
+            <header class="slide-heading"><h2 id="title-2">The deployment profile</h2><p>The platform and operating target for a system.</p></header>
+            <div class="profile-layout">
+              <div class="definition-block"><p>A <strong>Deployment Profile</strong> describes the intended application and operating conditions for a specified vehicle and hardware configuration.</p><p class="supporting-copy">Software candidates can share a profile, provided their requirements fit.</p></div>
+              <dl class="profile-parts"><div><dt><span>🚗</span> Vehicle platform</dt><dd>Vehicle, sensors, compute, actuation, and interfaces.</dd></div><div><dt><span>🌍</span> Operating conditions</dt><dd>Roads, speed, weather, lighting, and other ODD boundaries.</dd></div><div><dt><span>🎯</span> Use case</dt><dd>Driving functions and driver or operator responsibilities.</dd></div></dl>
+            </div>
+            <div class="example-strip"><div class="example-title">Campus shuttle<span>Illustrative profile</span></div><p>LiDAR, cameras, GNSS/IMU<br>Specified vehicle and compute</p><p>Paved campus routes<br>Daylight and dry weather</p><p class="speed"><strong>≤ 15</strong> km/h</p></div>
+            <p class="slide-note">The profile states the target. The integrated design defines its ODD and records what evaluation supports.</p>
+          </div>
+          <footer class="slide-footer"><span>Draft for discussion</span><a href="https://publications.pages.asam.net/standards/ASAM_OpenODD/ASAM_OpenODD/latest/specification/03_terms_and_definitions/03_terms_and_definitions.html">ODD terminology: ASAM OpenODD</a><span>02 / 08</span></footer>
+        </section>
+
+        <section class="slide" id="slide-3" data-title="Reference software stacks" aria-labelledby="title-3" hidden>
+          <div class="slide-content">
+            <header class="slide-heading"><h2 id="title-3">The reference software stack</h2><p>A software configuration Autoware publishes and maintains as a recommended baseline.</p></header>
+            <div class="stack-list"><div><h3>Rule-based Planning</h3><p>Localization and perception, rule-based planning, control, and supporting modules.</p></div><div><h3>Diffusion Planning</h3><p>A specified diffusion planner, required inputs, trajectory checks, and control.</p></div><div><h3>Meteor-based</h3><p>A specified Meteor model, runtime, adapters, and supporting Autoware modules.</p></div><div><h3>Vision Pilot</h3><p>AutoSteer, AutoSpeed, AutoDrive, and explicitly selected supporting modules.</p></div><div><h3>Fusion Pilot</h3><p>AutoE2E, input processing, runtime, output adapters, and supporting modules.</p></div></div>
+            <div class="bottom-callout"><strong>A name resolves to a configuration.</strong><span>Modules, model versions, parameters, interfaces, and platform requirements.</span></div>
+            <p class="slide-note">These are candidate baselines. Their complete manifests and supported deployment profiles remain to be specified.</p>
+          </div>
+          <footer class="slide-footer"><span>Draft for discussion</span><span>Proposed stack examples</span><span>03 / 08</span></footer>
+        </section>
+
+        <section class="slide" id="slide-4" data-title="Reference design families" aria-labelledby="title-4" hidden>
+          <div class="slide-content">
+            <header class="slide-heading"><h2 id="title-4">Reference design families</h2><p>Organize the catalog around applications. Keep implementation choices explicit.</p></header>
+            <div class="family-layout">
+              <div class="family-list"><div class="family-item selected"><span>🚐</span><div><h3>Low-speed shuttle</h3><p>Campus and local passenger transport</p></div></div><div class="family-item"><span>🛣️</span><div><h3>Highway assistance</h3><p>Driver assistance on highway routes</p></div></div><div class="family-item"><span>🚕</span><div><h3>Urban robotaxi</h3><p>Passenger transport within a defined ODD</p></div></div></div>
+              <div class="family-tree"><div class="tree-level family-level"><span>Family</span><strong>Low-speed shuttle</strong></div><div class="tree-level design-level"><span>Reference design</span><strong>Campus shuttle</strong><p>Deployment profile + reference software stack</p></div><div class="tree-level variant-level"><span>Documented variants</span><div class="variant-names"><strong>Rule-based planning</strong><strong>Diffusion planning</strong><strong>Meteor-based</strong></div></div></div>
+            </div>
+            <p class="slide-note">A family groups related designs. Each design can have a baseline and documented variants.</p>
+          </div>
+          <footer class="slide-footer"><span>Draft for discussion</span><span>Illustrative family structure</span><span>04 / 08</span></footer>
+        </section>
+
+        <section class="slide catalog-slide" id="slide-5" data-title="The reference design catalog" aria-labelledby="title-5" hidden>
+          <div class="slide-content">
+            <header class="slide-heading"><h2 id="title-5">A catalog with independent attributes</h2><p>Application, ODD, vehicle, sensors, software, and evaluation each have their own field.</p></header>
+            <div class="catalog-controls"><label>Family<select id="family-filter"><option value="all">All families</option><option value="shuttle">Low-speed shuttle</option><option value="highway">Highway assistance</option><option value="robotaxi">Urban robotaxi</option></select></label><label>Sensing<select id="sensor-filter"><option value="all">All sensor configurations</option><option value="multi">Multiple sensor types</option><option value="camera">Camera-based</option><option value="unspecified">Requirements to specify</option></select></label><button id="reset-filters">Reset filters</button><span id="catalog-count" role="status" aria-live="polite"></span></div>
+            <div class="catalog-table-wrap"><table class="catalog-table"><thead><tr><th>Family</th><th>Target ODD</th><th>Platform</th><th>Sensors</th><th>Software</th><th>Evaluation</th></tr></thead><tbody id="catalog-rows"></tbody></table><p id="catalog-empty" hidden>No examples match these filters. Choose another family or sensing option.</p></div>
+            <p class="slide-note">Illustrative catalog entries. Proposed operating targets, compatibility, and evaluation remain to be established.</p>
+          </div>
+          <footer class="slide-footer"><span>Draft for discussion</span><span class="catalog-hint">Try the filters to explore the catalog</span><span>05 / 08</span></footer>
+        </section>
+
+        <section class="slide" id="slide-6" data-title="Configurations and variants" aria-labelledby="title-6" hidden>
+          <div class="slide-content">
+            <header class="slide-heading"><h2 id="title-6">A campus shuttle reference design</h2><p>One application can support several explicitly defined system configurations.</p></header>
+            <table class="variants-table"><thead><tr><th>Variant</th><th>Deployment profile</th><th>Software choice</th></tr></thead><tbody><tr><td>A</td><td>Campus shuttle platform and operating target</td><td>Modular software with rule-based planning</td></tr><tr><td>B</td><td>Campus shuttle platform and operating target</td><td>Modular software with a diffusion planner</td></tr><tr><td>C</td><td>Campus shuttle platform and operating target, subject to Meteor's platform requirements</td><td>Meteor-based configuration</td></tr><tr><td>D</td><td>Campus shuttle with cameras and radar, targeting campus operation</td><td>Camera–radar perception with rule-based planning</td></tr></tbody></table>
+            <div class="bottom-callout"><strong>Evidence belongs to a defined configuration.</strong><span>Each variant records its version, integration requirements, and evaluation scope.</span></div>
+            <p class="slide-note">Illustrative combinations. Changes to hardware, software, or operating conditions require an assessment of the affected evidence.</p>
+          </div>
+          <footer class="slide-footer"><span>Draft for discussion</span><span>Candidate campus variants</span><span>06 / 08</span></footer>
+        </section>
+
+        <section class="slide" id="slide-7" data-title="The complete system blueprint" aria-labelledby="title-7" hidden>
+          <div class="slide-content">
+            <header class="slide-heading"><h2 id="title-7">The complete system blueprint</h2><p>A documented, versioned reference design makes the system reproducible and assessable.</p></header>
+            <dl class="requirements-list"><div><dt>Purpose</dt><dd>Driving functions, use case, automation target, and human responsibilities.</dd></div><div><dt>Operating domain</dt><dd>Conditions, boundaries, assumptions, and exclusions.</dd></div><div><dt>Platform</dt><dd>Vehicle, sensors, compute, actuation, and interfaces.</dd></div><div><dt>Software</dt><dd>Selected modules, models, versions, parameters, and dependencies.</dd></div><div><dt>Integration</dt><dd>Calibration, timing, maps, resources, and deployment instructions.</dd></div><div><dt>Evaluation</dt><dd>Criteria, tested configurations, results, and known limitations.</dd></div></dl>
+            <p class="slide-note">A reference design can begin as a draft. Its status must distinguish intended capability from demonstrated results.</p>
+          </div>
+          <footer class="slide-footer"><span>Draft for discussion</span><span>System definition</span><span>07 / 08</span></footer>
+        </section>
+
+        <section class="slide closing-slide" id="slide-8" data-title="Decisions for the board" aria-labelledby="title-8" hidden>
+          <div class="slide-content">
+            <header class="slide-heading"><h2 id="title-8">Decisions for the board</h2><p>Agree on the artifacts and their relationships, then define concrete examples.</p></header>
+            <div class="decision-list"><div><span>1</span><div><h3>System boundary</h3><p>Reference Design combines a Deployment Profile and a Reference Software Stack.</p></div></div><div><span>2</span><div><h3>Reusable definitions</h3><p>Share platform, ODD, and software definitions across designs and families.</p></div></div><div><span>3</span><div><h3>Ownership and publication</h3><p>Specify the minimum contents and maintainers for each official reference.</p></div></div><div><span>4</span><div><h3>Initial examples</h3><p>Describe rule-based, learned-planner, and camera-based configurations with one template.</p></div></div></div>
+            <div class="closing-line">A <strong>family</strong> organizes. A <strong>profile</strong> sets the target.<br>A <strong>stack</strong> supplies the software. A <strong>design</strong> brings them together.</div>
+          </div>
+          <footer class="slide-footer"><span>Draft for discussion</span><span>Autoware reference design proposal</span><span>08 / 08</span></footer>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <footer class="presentation-controls"><div class="keyboard-hint"><kbd>←</kbd><kbd>→</kbd><span>to navigate</span></div><div class="slide-dots" id="slide-dots" aria-label="Slide navigation"></div><div class="paging"><button id="previous-slide" aria-label="Previous slide">←</button><span id="slide-counter" aria-live="polite">01 / 08</span><button id="next-slide" aria-label="Next slide">→</button></div></footer>
+  <div id="announcement" class="sr-only" role="status" aria-live="polite"></div>
+  <noscript><p class="noscript-notice">Enable JavaScript to navigate the slides, or use the Download PDF button for the full presentation.</p></noscript>
+</body>
+</html>

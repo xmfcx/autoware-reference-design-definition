@@ -1,0 +1,120 @@
+name: Publish slides and PDF
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: publish-main
+  cancel-in-progress: false
+
+jobs:
+  build:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      CHROME_PATH: /usr/bin/google-chrome
+      CHROME_NO_SANDBOX: '1'
+    steps:
+      - name: Check out source
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '24'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate PDF
+        run: npm run export:pdf
+
+      - name: Check the presentation and PDF download
+        run: npm run check
+
+      - name: Upload generated PDF
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: generated-pdf
+          path: public/autoware-reference-design.pdf
+          if-no-files-found: error
+          retention-days: 3
+
+      - name: Prepare the website without generated PDFs
+        run: |
+          mkdir -p "$RUNNER_TEMP/site"
+          cp -R public/. "$RUNNER_TEMP/site/"
+          rm "$RUNNER_TEMP/site/autoware-reference-design.pdf"
+
+      - name: Upload website
+        uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b # v4
+        with:
+          path: ${{ runner.temp }}/site
+
+  publish-pdf:
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+
+      - name: Download generated PDF
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: generated-pdf
+          path: ${{ runner.temp }}/generated-pdf
+
+      - name: Commit PDF to data branch
+        shell: bash
+        run: |
+          pdf_branch_dir="$RUNNER_TEMP/pdf-data"
+          if git ls-remote --exit-code --heads origin refs/heads/data > "$RUNNER_TEMP/data-ref"; then
+            git fetch origin data
+            git worktree add --detach "$pdf_branch_dir" FETCH_HEAD
+          else
+            status=$?
+            if [ "$status" -ne 2 ]; then exit "$status"; fi
+            git worktree add --detach "$pdf_branch_dir" HEAD
+            git -C "$pdf_branch_dir" switch --orphan data
+          fi
+          cp "$RUNNER_TEMP/generated-pdf/autoware-reference-design.pdf" "$pdf_branch_dir/"
+          printf '%s\n' "$GITHUB_SHA" > "$pdf_branch_dir/source-commit.txt"
+          git -C "$pdf_branch_dir" add -- autoware-reference-design.pdf source-commit.txt
+          if git -C "$pdf_branch_dir" diff --cached --quiet; then exit 0; fi
+          git -C "$pdf_branch_dir" config user.name 'github-actions[bot]'
+          git -C "$pdf_branch_dir" config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          printf 'ci(pdf): update slides for %s\n\nSource: https://github.com/%s/commit/%s\n\nSigned-off-by: Mete Fatih Cırıt <mfc@autoware.org>\n' \
+            "${GITHUB_SHA:0:7}" "$GITHUB_REPOSITORY" "$GITHUB_SHA" > "$RUNNER_TEMP/pdf-commit-message"
+          git -C "$pdf_branch_dir" commit --file "$RUNNER_TEMP/pdf-commit-message"
+          git -C "$pdf_branch_dir" push origin HEAD:refs/heads/data
+
+  deploy:
+    needs: [build, publish-pdf]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5
+
+      - name: Deploy website
+        id: deployment
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4

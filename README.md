@@ -1,0 +1,69 @@
+# Autoware reference design presentation
+
+An eight-slide presentation of the [reference design terminology proposal](reference-design-proposal.md), with an interactive catalog and a PDF download.
+
+- [View the slides](https://xmfcx.github.io/autoware-reference-design-definition/)
+- [Download the latest PDF](https://github.com/xmfcx/autoware-reference-design-definition/raw/refs/heads/data/autoware-reference-design.pdf)
+
+The presentation labels candidate stacks, configurations, and catalog entries as proposals. Their presence does not establish compatibility or completed evaluation.
+
+## Run locally
+
+Use Node.js 24. Serving the presentation does not require installing dependencies.
+
+```sh
+npm start
+```
+
+Open [localhost:4173](http://localhost:4173). Use the arrow keys, navigation buttons, or slide menu. Fullscreen mode scales the slides to fit the display, including 4K screens.
+
+The download button points to the latest published PDF on the `data` branch. It becomes available after the first successful publication workflow. The PDF includes every catalog example, regardless of the selected browser filters.
+
+## Edit and check
+
+- Edit the proposal in `reference-design-proposal.md`.
+- Edit slide content in `public/index.html`.
+- Edit catalog entries and interactions in `public/app.js`.
+- Edit the design and print layout in `public/styles.css`.
+- Edit the vector background in `public/assets/aero.svg`.
+
+Install dependencies and generate a local PDF before running the browser checks:
+
+```sh
+npm ci
+npm run export:pdf
+npm run check
+```
+
+The exporter uses an installed Chrome or Chromium browser. Set `CHROME_PATH` if its executable is not detected automatically. The local export is `public/autoware-reference-design.pdf`; it is ignored by Git. To inspect it locally, open that file or visit [the local PDF](http://localhost:4173/autoware-reference-design.pdf).
+
+The PDF uses the same HTML and CSS as the presentation, with one slide per page and selectable text. Decorative layers are composited into high-resolution backgrounds for consistent colors across PDF viewers. The checks cover navigation, filters, desktop and mobile layouts, 4K fullscreen scaling, and the download button. During local checks, the published download URL is served the locally generated PDF so the checks can run before `data` exists.
+
+## Publication workflow
+
+The [publication workflow](.github/workflows/publish.yml) runs on pushes to `main` and can also be started manually on `main`.
+
+1. Install dependencies, generate the PDF, and run the browser checks.
+2. Commit the PDF and its source commit ID to `data`, creating that branch on the first run. Updates preserve branch history and do not force-push.
+3. Deploy the files from `public/` to GitHub Pages, excluding the generated PDF. The download button reads the PDF directly from `data`.
+
+`main` contains source files only. `data` contains `autoware-reference-design.pdf` and `source-commit.txt`. Pushes to `data` do not trigger another publication run. Until the next run succeeds, the download link continues to serve the previous successful PDF.
+
+For initial setup, select **GitHub Actions** as the publishing source in the repository's **Settings → Pages**. The workflow uses `GITHUB_TOKEN` to write `data` and deploy Pages; no personal access token is required. See [GitHub's custom Pages workflow documentation](https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages).
+
+## Files
+
+```text
+reference-design-proposal.md  Board discussion proposal
+public/                      Static presentation and assets
+scripts/                     Local server, PDF exporter, and browser checks
+.github/workflows/           PDF publication and Pages deployment
+```
+
+The local server serves only `public/`. The entire `docs/` folder is reserved for local reference material and ignored by Git, along with generated PDFs, development dependencies, and local editor settings.
+
+## Visual credits
+
+The background is inspired by the Windows 7 login-screen background. It was recreated as SVG gradients, paths, and light trails in `public/assets/aero.svg`; the published repository and website do not include or embed the original background image.
+
+The presentation uses the Carlito font. Its license is included in [public/assets/FONT-LICENSE.txt](public/assets/FONT-LICENSE.txt).

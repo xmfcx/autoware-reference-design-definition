@@ -1,0 +1,11 @@
+/node_modules/
+/docs/
+/.venv/
+/.idea/
+/.preview/
+/.agents/
+/.codex/
+/.aws/
+.env
+.env.*
+*.pdf

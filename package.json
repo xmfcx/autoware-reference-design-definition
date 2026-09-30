@@ -1,0 +1,14 @@
+{
+  "name": "autoware-reference-design-slides",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node scripts/serve.mjs",
+    "export:pdf": "node scripts/export-pdf.mjs",
+    "check": "node scripts/check.mjs"
+  },
+  "devDependencies": {
+    "puppeteer-core": "24.43.1"
+  }
+}
