@@ -4,6 +4,14 @@ const menu = document.querySelector('#slide-menu');
 const overview = document.querySelector('#overview-toggle');
 const previous = document.querySelector('#previous-slide');
 const next = document.querySelector('#next-slide');
+const layoutSelect = document.querySelector('#layout-select');
+const layoutStorageKey = 'autoware-slide-layout';
+let layout = 'desktop';
+try {
+  if (localStorage.getItem(layoutStorageKey) === 'mobile') layout = 'mobile';
+} catch { /* Keep the default when browser storage is unavailable. */ }
+document.documentElement.dataset.layout = layout;
+layoutSelect.value = layout;
 let current = 0;
 
 slides.forEach((slide, index) => {
@@ -28,7 +36,7 @@ function showSlide(index, updateHash = true) {
   next.disabled = current === slides.length - 1;
   if (updateHash) history.replaceState(null, '', `#slide-${current + 1}`);
   document.querySelector('#announcement').textContent = `Slide ${current + 1} of ${slides.length}: ${slides[current].dataset.title}`;
-  if (window.matchMedia('(max-width: 700px)').matches) window.scrollTo({ top: 0, behavior: 'instant' });
+  if (layout === 'mobile') window.scrollTo({ top: 0, behavior: 'instant' });
 }
 
 function readHash() {
@@ -37,12 +45,23 @@ function readHash() {
 }
 
 function sizeDeck() {
-  if (window.innerWidth <= 700) return;
-  const availableWidth = window.innerWidth - 68;
-  const availableHeight = window.innerHeight - 196;
-  const scale = Math.min(availableWidth / 1280, Math.max(260, availableHeight) / 720);
+  if (layout === 'mobile') return;
+  const viewportWidth = document.documentElement.clientWidth;
+  const availableWidth = viewportWidth - (viewportWidth <= 700 ? 34 : 68);
+  const availableHeight = window.innerHeight - document.querySelector('.toolbar').offsetHeight - document.querySelector('.presentation-controls').offsetHeight - 54;
+  const scale = Math.min(availableWidth / 1280, Math.max(1, availableHeight) / 720);
   document.documentElement.style.setProperty('--deck-scale', scale);
 }
+
+layoutSelect.addEventListener('change', () => {
+  layout = layoutSelect.value;
+  document.documentElement.dataset.layout = layout;
+  try { localStorage.setItem(layoutStorageKey, layout); } catch { /* The switch still works without persistence. */ }
+  closeMenu();
+  sizeDeck();
+  window.scrollTo({ top: 0, behavior: 'instant' });
+  document.querySelector('#announcement').textContent = `${layout === 'mobile' ? 'Mobile' : 'Desktop'} layout selected.`;
+});
 
 function closeMenu() { menu.hidden = true; overview.setAttribute('aria-expanded', 'false'); }
 overview.addEventListener('click', () => {

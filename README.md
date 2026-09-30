@@ -17,6 +17,8 @@ npm start
 
 Open [localhost:4173](http://localhost:4173). Use the arrow keys, navigation buttons, or slide menu. Fullscreen mode scales the slides to fit the display, including 4K screens.
 
+The desktop slide layout is the default on every screen, including phones, and scales to fit. Select **View → Mobile** for the stacked reading layout, or **View → Desktop** to switch back. The site remembers this choice in the current browser when local storage is available.
+
 The download button points to the latest published PDF on the `data` branch. It becomes available after the first successful publication workflow. The PDF includes every catalog example, regardless of the selected browser filters.
 
 ## Edit and check

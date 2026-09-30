@@ -70,12 +70,52 @@ try {
   await page.evaluate(() => document.exitFullscreen());
 
   await page.setViewport({ width: 390, height: 844, deviceScaleFactor: 1, isMobile: true, hasTouch: true });
+  await page.goto(url, { waitUntil: 'networkidle0' });
+  assert.equal(await page.$eval('#layout-select', element => element.value), 'desktop', 'Phones should start with the desktop layout');
+  for (let number = 1; number <= 8; number++) {
+    await page.evaluate(number => { location.hash = `slide-${number}`; }, number);
+    await page.waitForFunction(number => document.querySelector(`#slide-${number}`).hidden === false, {}, number);
+    const bounds = await page.$eval('.deck-shell', element => {
+      const rect = element.getBoundingClientRect();
+      return { width: rect.width, height: rect.height, right: rect.right };
+    });
+    assert.ok(Math.abs(bounds.width / bounds.height - 16 / 9) < 0.01, `Phone slide ${number} should retain desktop proportions`);
+    assert.ok(bounds.right <= 390 && bounds.width > 340, `Desktop slides should fit the phone width: ${JSON.stringify(bounds)}`);
+    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1), true, `Desktop layout overflows on phone slide ${number}`);
+    if ([1, 5].includes(number)) await page.screenshot({ path: `${preview}/phone-desktop-${number}.png`, fullPage: true });
+  }
+  for (const viewport of [{ width: 844, height: 390 }, { width: 320, height: 568 }]) {
+    await page.setViewport({ ...viewport, deviceScaleFactor: 1, isMobile: true, hasTouch: true });
+    await page.waitForFunction(() => document.querySelector('.deck-shell').getBoundingClientRect().right <= innerWidth);
+    assert.equal(await page.$eval('#layout-select', element => element.value), 'desktop');
+    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), true, 'Controls must fit narrow and landscape screens');
+    const fits = await page.$eval('.deck-shell', element => {
+      const rect = element.getBoundingClientRect();
+      return rect.top >= document.querySelector('.toolbar').getBoundingClientRect().bottom && rect.bottom <= document.querySelector('.presentation-controls').getBoundingClientRect().top;
+    });
+    assert.ok(fits, 'Desktop slides should fit between the toolbar and navigation in either orientation');
+    await page.screenshot({ path: `${preview}/phone-desktop-${viewport.width}.png`, fullPage: true });
+  }
+  await page.setViewport({ width: 390, height: 844, deviceScaleFactor: 1, isMobile: true, hasTouch: true });
+  await page.select('#layout-select', 'mobile');
   for (let number = 1; number <= 8; number++) {
     await page.evaluate(number => { location.hash = `slide-${number}`; }, number);
     await page.waitForFunction(number => document.querySelector(`#slide-${number}`).hidden === false, {}, number);
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1), true, `Mobile page overflows on slide ${number}`);
     if ([1, 5].includes(number)) await page.screenshot({ path: `${preview}/mobile-${number}.png`, fullPage: true });
   }
+  await page.reload({ waitUntil: 'networkidle0' });
+  assert.equal(await page.$eval('#layout-select', element => element.value), 'mobile', 'An explicit mobile choice should survive reloads');
+  await page.keyboard.press('Home');
+  assert.equal(await page.$eval('.map-connections', element => getComputedStyle(element).display), 'none');
+  await page.emulateMediaType('print');
+  assert.equal(await page.$eval('.map-connections', element => getComputedStyle(element).display), 'block', 'Print should retain the desktop diagram after selecting mobile');
+  assert.equal(await page.$eval('#slide-1', element => element.getBoundingClientRect().width), 1280);
+  await page.emulateMediaType('screen');
+  await page.select('#layout-select', 'desktop');
+  await page.reload({ waitUntil: 'networkidle0' });
+  assert.equal(await page.$eval('#layout-select', element => element.value), 'desktop', 'Switching back to desktop should survive reloads');
+  assert.equal(await page.$eval('.map-connections', element => getComputedStyle(element).display), 'block');
 
   const pdf = await fetch(`${url}/autoware-reference-design.pdf`);
   assert.equal(pdf.status, 200);
@@ -105,7 +145,7 @@ try {
   assert.equal((await fetch(`${url}/docs/private-discussion.png`)).status, 404);
   assert.equal((await fetch(`${url}/docs/reference-design-evidence-report.md`)).status, 404);
   assert.deepEqual(errors, [], 'Browser errors');
-  console.log('Passed: slide navigation, menu, filters, full-catalog export, eight desktop layouts, 4K scaling, eight mobile layouts, PDF download, and public-only serving.');
+  console.log('Passed: slide navigation, menu, filters, full-catalog export, desktop and 4K layouts, desktop slides on phones, orientation changes, explicit mobile layout, saved layout choices, print layout, PDF download, and public-only serving.');
   console.log(`Screenshots: ${preview}`);
 } finally {
   if (browser) await browser.close();
