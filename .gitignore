@@ -9,4 +9,4 @@
 .env
 .env.*
 *.pdf
-/public/assets/social-preview.png
+/public/assets/social-preview.*
