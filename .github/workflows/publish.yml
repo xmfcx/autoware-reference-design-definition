@@ -38,6 +38,9 @@ jobs:
       - name: Generate PDF
         run: npm run export:pdf
 
+      - name: Generate link preview image
+        run: npm run export:preview
+
       - name: Check the presentation and PDF download
         run: npm run check
 

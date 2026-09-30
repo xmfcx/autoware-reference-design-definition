@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "start": "node scripts/serve.mjs",
+    "export:preview": "node scripts/export-preview.mjs",
     "export:pdf": "node scripts/export-pdf.mjs",
     "check": "node scripts/check.mjs"
   },
