@@ -29,12 +29,6 @@
   <a class="skip-link" href="#presentation">Skip to slides</a>
   <header class="toolbar">
     <a class="wordmark" href="#slide-1" aria-label="Autoware presentation, first slide">autoware<span>Reference design</span></a>
-    <label class="layout-picker" for="layout-select">View
-      <select id="layout-select" aria-label="Slide layout">
-        <option value="desktop">Desktop</option>
-        <option value="mobile">Mobile</option>
-      </select>
-    </label>
     <div class="toolbar-actions">
       <span class="draft-label">Proposal for discussion</span>
       <button class="glass-button overview-button" id="overview-toggle" aria-expanded="false" aria-controls="slide-menu">Slides <span aria-hidden="true">▦</span></button>
@@ -139,6 +133,8 @@
         </section>
       </div>
     </div>
+    <p class="presentation-hint" id="presentation-hint" hidden>Tap either side or swipe to navigate. Tap the center for Exit.</p>
+    <button class="glass-button exit-presentation" id="exit-presentation" hidden>Exit presentation <span aria-hidden="true">×</span></button>
   </main>
 
   <footer class="presentation-controls"><div class="keyboard-hint"><kbd>←</kbd><kbd>→</kbd><span>to navigate</span></div><div class="slide-dots" id="slide-dots" aria-label="Slide navigation"></div><div class="paging"><button id="previous-slide" aria-label="Previous slide">←</button><span id="slide-counter" aria-live="polite">01 / 08</span><button id="next-slide" aria-label="Next slide">→</button></div></footer>

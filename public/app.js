@@ -4,14 +4,13 @@ const menu = document.querySelector('#slide-menu');
 const overview = document.querySelector('#overview-toggle');
 const previous = document.querySelector('#previous-slide');
 const next = document.querySelector('#next-slide');
-const layoutSelect = document.querySelector('#layout-select');
-const layoutStorageKey = 'autoware-slide-layout';
-let layout = 'desktop';
-try {
-  if (localStorage.getItem(layoutStorageKey) === 'mobile') layout = 'mobile';
-} catch { /* Keep the default when browser storage is unavailable. */ }
-document.documentElement.dataset.layout = layout;
-layoutSelect.value = layout;
+const stage = document.querySelector('#presentation');
+const fullscreenButton = document.querySelector('#fullscreen-toggle');
+const exitButton = document.querySelector('#exit-presentation');
+const presentationHint = document.querySelector('#presentation-hint');
+let presenting = false;
+let hintTimer;
+let suppressClick = false;
 let current = 0;
 
 slides.forEach((slide, index) => {
@@ -36,7 +35,10 @@ function showSlide(index, updateHash = true) {
   next.disabled = current === slides.length - 1;
   if (updateHash) history.replaceState(null, '', `#slide-${current + 1}`);
   document.querySelector('#announcement').textContent = `Slide ${current + 1} of ${slides.length}: ${slides[current].dataset.title}`;
-  if (layout === 'mobile') window.scrollTo({ top: 0, behavior: 'instant' });
+  if (presenting) {
+    exitButton.hidden = true;
+    presentationHint.hidden = true;
+  }
 }
 
 function readHash() {
@@ -45,23 +47,12 @@ function readHash() {
 }
 
 function sizeDeck() {
-  if (layout === 'mobile') return;
-  const viewportWidth = document.documentElement.clientWidth;
-  const availableWidth = viewportWidth - (viewportWidth <= 700 ? 34 : 68);
-  const availableHeight = window.innerHeight - document.querySelector('.toolbar').offsetHeight - document.querySelector('.presentation-controls').offsetHeight - 54;
-  const scale = Math.min(availableWidth / 1280, Math.max(1, availableHeight) / 720);
+  const viewportWidth = presenting ? stage.clientWidth : document.documentElement.clientWidth;
+  const availableWidth = viewportWidth - (presenting ? 0 : viewportWidth <= 700 ? 34 : 68);
+  const availableHeight = presenting ? stage.clientHeight : window.innerHeight - document.querySelector('.toolbar').offsetHeight - document.querySelector('.presentation-controls').offsetHeight - 54;
+  const scale = Math.min(Math.max(1, availableWidth) / 1280, Math.max(1, availableHeight) / 720);
   document.documentElement.style.setProperty('--deck-scale', scale);
 }
-
-layoutSelect.addEventListener('change', () => {
-  layout = layoutSelect.value;
-  document.documentElement.dataset.layout = layout;
-  try { localStorage.setItem(layoutStorageKey, layout); } catch { /* The switch still works without persistence. */ }
-  closeMenu();
-  sizeDeck();
-  window.scrollTo({ top: 0, behavior: 'instant' });
-  document.querySelector('#announcement').textContent = `${layout === 'mobile' ? 'Mobile' : 'Desktop'} layout selected.`;
-});
 
 function closeMenu() { menu.hidden = true; overview.setAttribute('aria-expanded', 'false'); }
 overview.addEventListener('click', () => {
@@ -73,29 +64,118 @@ document.addEventListener('click', event => { if (!menu.contains(event.target) &
 previous.addEventListener('click', () => showSlide(current - 1));
 next.addEventListener('click', () => showSlide(current + 1));
 document.addEventListener('keydown', event => {
+  if (event.key === 'Escape' && presenting) { event.preventDefault(); exitPresentation(); return; }
   if (event.key === 'Escape' && !menu.hidden) { closeMenu(); overview.focus(); return; }
   if (event.altKey || event.ctrlKey || event.metaKey || /^(SELECT|INPUT|TEXTAREA)$/.test(event.target.tagName) || !menu.hidden) return;
-  if (['ArrowRight', 'PageDown'].includes(event.key) || (event.code === 'Space' && event.target === document.body)) { event.preventDefault(); showSlide(current + 1); }
+  if (['ArrowRight', 'PageDown'].includes(event.key) || (event.code === 'Space' && [document.body, stage].includes(event.target))) { event.preventDefault(); showSlide(current + 1); }
   if (['ArrowLeft', 'PageUp'].includes(event.key)) { event.preventDefault(); showSlide(current - 1); }
   if (event.key === 'Home') { event.preventDefault(); showSlide(0); }
   if (event.key === 'End') { event.preventDefault(); showSlide(slides.length - 1); }
 });
 
-const fullscreenButton = document.querySelector('#fullscreen-toggle');
-if (!document.fullscreenEnabled) fullscreenButton.hidden = true;
-fullscreenButton.addEventListener('click', async () => {
+function activeFullscreen() { return document.fullscreenElement || document.webkitFullscreenElement; }
+
+function setPresenting(value) {
+  presenting = value;
+  document.documentElement.classList.toggle('is-presenting', value);
+  closeMenu();
+  exitButton.hidden = true;
+  clearTimeout(hintTimer);
+  presentationHint.hidden = !value;
+  if (value) hintTimer = setTimeout(() => { presentationHint.hidden = true; }, 3500);
+  sizeDeck();
+  (value ? stage : fullscreenButton).focus({ preventScroll: true });
+}
+
+async function enterPresentation() {
+  setPresenting(true);
+  try {
+    if (document.documentElement.requestFullscreen) await document.documentElement.requestFullscreen({ navigationUI: 'hide' });
+    else if (document.documentElement.webkitRequestFullscreen) await document.documentElement.webkitRequestFullscreen();
+  } catch {
+    // Keep the controls hidden and fill the page if native fullscreen is unavailable.
+  }
+  sizeDeck();
+  document.querySelector('#announcement').textContent = 'Presentation mode. Tap either side or swipe to navigate. Tap the center for Exit, or press Escape.';
+}
+
+async function exitPresentation() {
+  setPresenting(false);
   try {
     if (document.fullscreenElement) await document.exitFullscreen();
-    else await document.documentElement.requestFullscreen();
+    else if (document.webkitFullscreenElement) await document.webkitExitFullscreen();
   } catch {
-    document.querySelector('#announcement').textContent = 'Fullscreen is unavailable in this browser. The presentation remains available in this window.';
+    document.querySelector('#announcement').textContent = 'Presentation controls restored. Use the browser controls to leave fullscreen.';
+  }
+}
+// Handle touch releases directly; some browsers omit the click after a swipe.
+// Consume the compatibility click when it does arrive so one tap acts only once.
+document.addEventListener('pointerdown', () => { suppressClick = false; }, true);
+document.addEventListener('click', event => {
+  if (suppressClick && event.detail > 0) {
+    suppressClick = false;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+  }
+}, true);
+function bindTap(button, action) {
+  let touch;
+  button.addEventListener('click', action);
+  button.addEventListener('pointerdown', event => {
+    touch = event.isPrimary && event.pointerType !== 'mouse' ? { id: event.pointerId, x: event.clientX, y: event.clientY } : null;
+  });
+  button.addEventListener('pointercancel', () => { touch = null; });
+  button.addEventListener('pointerup', event => {
+    const start = touch;
+    touch = null;
+    if (!start || event.pointerId !== start.id || Math.hypot(event.clientX - start.x, event.clientY - start.y) > 10) return;
+    const bounds = button.getBoundingClientRect();
+    if (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom) return;
+    suppressClick = true;
+    action();
+  });
+}
+bindTap(fullscreenButton, enterPresentation);
+bindTap(exitButton, exitPresentation);
+for (const event of ['fullscreenchange', 'webkitfullscreenchange']) {
+  document.addEventListener(event, () => setPresenting(Boolean(activeFullscreen())));
+}
+
+const interactive = 'a,button,input,select,textarea,label,[contenteditable]';
+let gesture;
+stage.addEventListener('pointerdown', event => {
+  if (!event.isPrimary) { gesture = null; return; }
+  if (event.pointerType === 'mouse' || event.target.closest(interactive)) return;
+  gesture = { id: event.pointerId, x: event.clientX, y: event.clientY };
+});
+stage.addEventListener('pointercancel', () => { gesture = null; });
+stage.addEventListener('pointerup', event => {
+  if (!gesture || event.pointerId !== gesture.id) return;
+  const dx = event.clientX - gesture.x;
+  const dy = event.clientY - gesture.y;
+  gesture = null;
+  suppressClick = Math.hypot(dx, dy) > 10;
+  if (Math.abs(dx) >= 45 && Math.abs(dx) > Math.abs(dy) * 1.5) showSlide(current + (dx < 0 ? 1 : -1));
+  else if (!suppressClick && presenting) {
+    suppressClick = true;
+    handleStageTap(event.clientX);
   }
 });
-document.addEventListener('fullscreenchange', () => {
-  fullscreenButton.firstChild.textContent = document.fullscreenElement ? 'Exit presentation ' : 'Present ';
-  sizeDeck();
+function handleStageTap(clientX) {
+  const bounds = stage.getBoundingClientRect();
+  const position = (clientX - bounds.left) / bounds.width;
+  if (position < 0.25) showSlide(current - 1);
+  else if (position > 0.75) showSlide(current + 1);
+  else {
+    exitButton.hidden = !exitButton.hidden;
+    presentationHint.hidden = true;
+  }
+}
+stage.addEventListener('click', event => {
+  if (presenting && !event.target.closest(interactive)) handleStageTap(event.clientX);
 });
 window.addEventListener('resize', sizeDeck);
+window.visualViewport?.addEventListener('resize', sizeDeck);
 window.addEventListener('hashchange', readHash);
 
 const entries = [
