@@ -28,7 +28,7 @@
 <body>
   <a class="skip-link" href="#presentation">Skip to slides</a>
   <header class="toolbar">
-    <a class="wordmark" href="#slide-1" aria-label="Autoware presentation, first slide">autoware<span>Reference design</span></a>
+    <div class="wordmark">autoware<span>Reference design</span></div>
     <div class="toolbar-actions">
       <span class="draft-label">Proposal for discussion</span>
       <button class="glass-button overview-button" id="overview-toggle" aria-expanded="false" aria-controls="slide-menu">Slides <span aria-hidden="true">▦</span></button>
@@ -62,6 +62,50 @@
         <section class="slide" id="slide-2" data-title="Deployment profile" aria-labelledby="title-2" hidden>
           <div class="slide-content">
             <header class="slide-heading"><h2 id="title-2">The deployment profile</h2><p>The platform and operating target for a system.</p></header>
+            <svg class="profile-motion" viewBox="0 0 460 150" aria-hidden="true" focusable="false">
+              <defs>
+                <linearGradient id="shuttle-road" gradientUnits="userSpaceOnUse" x1="8" y1="0" x2="452" y2="0"><stop stop-color="#55b9df" stop-opacity="0"/><stop offset=".25" stop-color="#55b9df" stop-opacity=".5"/><stop offset=".8" stop-color="#55b9df" stop-opacity=".5"/><stop offset="1" stop-color="#55b9df" stop-opacity="0"/></linearGradient>
+                <linearGradient id="shuttle-body" x1="0" y1="0" x2=".2" y2="1"><stop stop-color="#f6feff"/><stop offset=".36" stop-color="#8ce7fa"/><stop offset=".6" stop-color="#249ee2"/><stop offset="1" stop-color="#0861ab"/></linearGradient>
+                <linearGradient id="shuttle-glass" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#0a4278"/><stop offset=".55" stop-color="#1475a8"/><stop offset="1" stop-color="#8ae4f1"/></linearGradient>
+                <linearGradient id="shuttle-rim" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#f5fdff"/><stop offset=".55" stop-color="#86bdd7"/><stop offset="1" stop-color="#d5f5ff"/></linearGradient>
+                <radialGradient id="shuttle-smoke"><stop stop-color="#91b6ca" stop-opacity=".8"/><stop offset=".55" stop-color="#b6d4e2" stop-opacity=".55"/><stop offset="1" stop-color="#d4eaf2" stop-opacity="0"/></radialGradient>
+              </defs>
+              <path d="M8 128H452" stroke="url(#shuttle-road)" stroke-width="2"/>
+              <path d="M26 136H434" stroke="url(#shuttle-road)" stroke-width="1" stroke-dasharray="18 17" opacity=".45"/>
+              <g class="vehicle-drive">
+                <ellipse cx="112" cy="126" rx="87" ry="5" fill="#2d85b0" opacity=".13"/>
+                <g class="vehicle-smoke" fill="url(#shuttle-smoke)">
+                  <circle class="smoke-puff" style="--puff-delay:0s" cx="26" cy="109" r="8"/>
+                  <circle class="smoke-puff" style="--puff-delay:-.34s" cx="26" cy="109" r="8"/>
+                  <circle class="smoke-puff" style="--puff-delay:-.68s" cx="26" cy="109" r="8"/>
+                  <circle class="smoke-puff" style="--puff-delay:-1.02s" cx="26" cy="109" r="8"/>
+                  <circle class="smoke-puff" style="--puff-delay:-1.36s" cx="26" cy="109" r="8"/>
+                </g>
+                <g class="vehicle-body">
+                  <path d="M29 86 45 79 66 55Q72 49 82 49H126Q136 49 143 57L163 77 186 82Q197 84 199 95L200 105Q200 112 191 112H34Q24 112 24 101V93Q24 89 29 86Z" fill="url(#shuttle-body)" stroke="#126b9e" stroke-width="1.5"/>
+                  <path d="M55 78 73 57Q76 55 82 55H117V78Z" fill="url(#shuttle-glass)" stroke="#ecfcff" stroke-width="1.4"/>
+                  <path d="M124 55Q133 55 139 62L153 78H124Z" fill="url(#shuttle-glass)" stroke="#ecfcff" stroke-width="1.4"/>
+                  <path d="M73 57H111L65 75H58Z" fill="#c6f7ff" opacity=".23"/>
+                  <path d="M29 88Q104 82 189 89" fill="none" stroke="#ebfcff" stroke-width="2" opacity=".85"/>
+                  <path d="M34 102H187" stroke="#86efff" stroke-width="2" opacity=".8"/>
+                  <path d="M122 83V101M113 87H119" fill="none" stroke="#176d9f" stroke-width="1.4" stroke-linecap="round"/>
+                  <path d="M27 89H36L34 95H26Z" fill="#ff7976"/>
+                  <path d="M187 88 197 92V96H186Z" fill="#f8ffdf" stroke="#fff" stroke-width=".8"/>
+                  <path d="M188 103H197" stroke="#144e75" stroke-width="2" stroke-linecap="round"/>
+                  <path d="M98 49V45H113V49" fill="#1c739e"/>
+                  <rect x="96" y="40" width="19" height="7" rx="3.5" fill="url(#shuttle-glass)" stroke="#8bdeed"/>
+                  <path d="M100 41.5H111" stroke="#eaffff" stroke-width="1.3" stroke-linecap="round"/>
+                </g>
+                <g transform="translate(67 111)">
+                  <circle r="15" fill="#153e59"/><circle r="11" fill="url(#shuttle-rim)" stroke="#8ad8f0"/>
+                  <g class="vehicle-wheel" stroke="#326f97" stroke-width="2"><path d="M0-8V8M-8 0H8M-5.7-5.7 5.7 5.7M-5.7 5.7 5.7-5.7"/><circle r="3" fill="#e8fbff" stroke-width="1"/></g>
+                </g>
+                <g transform="translate(167 111)">
+                  <circle r="15" fill="#153e59"/><circle r="11" fill="url(#shuttle-rim)" stroke="#8ad8f0"/>
+                  <g class="vehicle-wheel" stroke="#326f97" stroke-width="2"><path d="M0-8V8M-8 0H8M-5.7-5.7 5.7 5.7M-5.7 5.7 5.7-5.7"/><circle r="3" fill="#e8fbff" stroke-width="1"/></g>
+                </g>
+              </g>
+            </svg>
             <div class="profile-layout">
               <div class="definition-block"><p>A <strong>Deployment Profile</strong> describes the intended application and operating conditions for a specified vehicle and hardware configuration.</p><p class="supporting-copy">Software candidates can share a profile, provided their requirements fit.</p></div>
               <dl class="profile-parts"><div><dt><span>🚗</span> Vehicle platform</dt><dd>Vehicle, sensors, compute, actuation, and interfaces.</dd></div><div><dt><span>🌍</span> Operating conditions</dt><dd>Roads, speed, weather, lighting, and other ODD boundaries.</dd></div><div><dt><span>🎯</span> Use case</dt><dd>Driving functions and driver or operator responsibilities.</dd></div></dl>
@@ -137,7 +181,7 @@
     <button class="glass-button exit-presentation" id="exit-presentation" hidden>Exit presentation <span aria-hidden="true">×</span></button>
   </main>
 
-  <footer class="presentation-controls"><div class="keyboard-hint"><kbd>←</kbd><kbd>→</kbd><span>to navigate</span></div><div class="slide-dots" id="slide-dots" aria-label="Slide navigation"></div><div class="paging"><button id="previous-slide" aria-label="Previous slide">←</button><span id="slide-counter" aria-live="polite">01 / 08</span><button id="next-slide" aria-label="Next slide">→</button></div></footer>
+  <footer class="presentation-controls"><p class="keyboard-hint">Use your keyboard’s arrow keys to navigate.</p><div class="slide-dots" id="slide-dots" aria-label="Slide navigation"></div><div class="paging"><button id="previous-slide" aria-label="Previous slide">←</button><span id="slide-counter" aria-live="polite">01 / 08</span><button id="next-slide" aria-label="Next slide">→</button></div></footer>
   <div id="announcement" class="sr-only" role="status" aria-live="polite"></div>
   <noscript><p class="noscript-notice">Enable JavaScript to navigate the slides, or use the Download PDF button for the full presentation.</p></noscript>
 </body>
