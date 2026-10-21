@@ -33,6 +33,10 @@ try {
   await page.goto(url, { waitUntil: 'networkidle0' });
   await page.evaluate(() => document.fonts.ready);
   assert.equal(await page.locator('#slide-counter').wait().then(() => page.$eval('#slide-counter', e => e.textContent)), '01 / 08');
+  await page.click('#diagram-download summary');
+  assert.equal(await page.$eval('#diagram-download', e => e.open), true);
+  await page.mouse.click(5, 5);
+  assert.equal(await page.$eval('#diagram-download', e => e.open), false, 'An outside click should close the diagram downloads');
   await page.keyboard.press('ArrowRight');
   assert.equal(await page.$eval('#slide-counter', e => e.textContent), '02 / 08');
   await page.keyboard.press('End');
@@ -177,6 +181,13 @@ try {
   assert.equal(await page.$eval('#presentation-hint', element => getComputedStyle(element).display), 'none');
   await page.emulateMediaType('screen');
 
+  const diagramLinks = await page.$$eval('#diagram-download a', links => links.map(link => link.href));
+  assert.equal(diagramLinks.length, 6);
+  for (const link of diagramLinks) {
+    const response = await fetch(link);
+    assert.equal(response.status, 200, `Run npm run export:diagram first: ${link}`);
+    assert.match(response.headers.get('content-type'), link.endsWith('.svg') ? /image\/svg\+xml/ : /image\/png/);
+  }
   const pdf = await fetch(`${url}/autoware-reference-design.pdf`);
   assert.equal(pdf.status, 200);
   assert.match(pdf.headers.get('content-type'), /application\/pdf/);
@@ -204,7 +215,7 @@ try {
   assert.equal((await fetch(`${url}/docs/private-discussion.png`)).status, 404);
   assert.equal((await fetch(`${url}/docs/reference-design-evidence-report.md`)).status, 404);
   assert.deepEqual(errors, [], 'Browser errors');
-  console.log('Passed: slide navigation, menu, filters, full-catalog export, desktop and 4K layouts, desktop slides on phones, fullscreen presentation, touch navigation, rotation, fullscreen fallback, print layout, PDF download, and public-only serving.');
+  console.log('Passed: slide navigation, menu, filters, full-catalog export, desktop and 4K layouts, desktop slides on phones, fullscreen presentation, touch navigation, rotation, fullscreen fallback, print layout, PDF and diagram downloads, and public-only serving.');
   console.log(`Screenshots: ${preview}`);
 } finally {
   if (browser) await browser.close();

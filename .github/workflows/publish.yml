@@ -41,6 +41,9 @@ jobs:
       - name: Generate link preview image
         run: npm run export:preview
 
+      - name: Generate diagram downloads
+        run: npm run export:diagram
+
       - name: Check the presentation and PDF download
         run: npm run check
 

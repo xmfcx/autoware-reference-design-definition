@@ -10,3 +10,4 @@
 .env.*
 *.pdf
 /public/assets/social-preview.*
+/public/assets/diagram/

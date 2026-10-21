@@ -61,11 +61,14 @@ overview.addEventListener('click', () => {
   if (!menu.hidden) menu.children[current].focus();
 });
 document.addEventListener('click', event => { if (!menu.contains(event.target) && !overview.contains(event.target)) closeMenu(); });
+const diagramDownload = document.getElementById('diagram-download');
+document.addEventListener('click', event => { if (!diagramDownload.contains(event.target)) diagramDownload.open = false; });
 previous.addEventListener('click', () => showSlide(current - 1));
 next.addEventListener('click', () => showSlide(current + 1));
 document.addEventListener('keydown', event => {
   if (event.key === 'Escape' && presenting) { event.preventDefault(); exitPresentation(); return; }
   if (event.key === 'Escape' && !menu.hidden) { closeMenu(); overview.focus(); return; }
+  if (event.key === 'Escape' && diagramDownload.open) { diagramDownload.open = false; diagramDownload.querySelector('summary').focus(); return; }
   if (event.altKey || event.ctrlKey || event.metaKey || /^(SELECT|INPUT|TEXTAREA)$/.test(event.target.tagName) || !menu.hidden) return;
   if (['ArrowRight', 'PageDown'].includes(event.key) || (event.code === 'Space' && [document.body, stage].includes(event.target))) { event.preventDefault(); showSlide(current + 1); }
   if (['ArrowLeft', 'PageUp'].includes(event.key)) { event.preventDefault(); showSlide(current - 1); }
@@ -141,7 +144,7 @@ for (const event of ['fullscreenchange', 'webkitfullscreenchange']) {
   document.addEventListener(event, () => setPresenting(Boolean(activeFullscreen())));
 }
 
-const interactive = 'a,button,input,select,textarea,label,[contenteditable]';
+const interactive = 'a,button,input,select,textarea,label,summary,[contenteditable]';
 let gesture;
 stage.addEventListener('pointerdown', event => {
   if (!event.isPrimary) { gesture = null; return; }
